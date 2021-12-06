@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Registration Form</title>
+	<link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+	<b> Please enter the below details for registrations </b>
+	<form  method="post" onSubmit="return validateForm()">
+		<label for="fname">First name:</label><br>
+	  <input type="text" id="fname" name="fname"><br>
+	  <label for="lname">Last name:</label><br>
+	  <input type="text" id="lname" name="lname"><br>
+    <label for="npi">NPI Number:</label><br>
+	  <input type="text" id="npi" name="npi"><br>
+    <label for="addr">Business Address:</label><br>
+    <textarea type="textarea" id="addr" name="addr" rows="4" cols="50"></textarea><br>
+    <label for="phone">Telephone Number:</label><br>
+    <!-- HTML 5 telephone function --->
+    <input type="tel" id="phone" name="phone"
+       pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+       required>
+
+    <small>Format: 123-456-7890</small><br>
+    <label for="email">Email Address:</label><br>
+    <!-- HTML 5 email function --->
+	  <input type="email" id="email" name="email"><br>
+    <br>
+    <input type="submit" value="Submit">
+    <input type="reset">
+	</form>
+ <script type="text/javascript"> 
+ function validateForm(){ 
+   var firstName = document.getElementById('fname').value; 
+   var lastName = document.getElementById('lname').value;
+   var npi=document.getElementById('npi').value; 
+   var address=document.getElementById('addr').value; 
+   var telephone=document.getElementById('phone').value;
+   var email=document.getElementById('email').value; 
+    console.log(firstName);
+    if(firstName == "")
+    { 
+      alert(" Please enter first name"); 
+      document.getElementById('fname').focus();
+      return false; 
+    }
+    if(lastName == "")
+    { 
+      alert(" Please enter last name"); 
+      document.getElementById('lname').focus();
+      return false; 
+    }
+    if(npi == "")
+    { 
+      alert(" Please enter NPI Number"); 
+      document.getElementById('npi').focus();
+      return false; 
+    }
+    if(address == "")
+    { 
+      alert(" Please enter address name"); 
+      document.getElementById('addr').focus();
+      return false; 
+    }
+    if(telephone == "")
+    { 
+      alert(" Please enter telephone number"); 
+      document.getElementById('phone').focus();
+      return false; 
+    }
+    if(email == "")
+    { 
+      alert(" Please enter email address"); 
+      document.getElementById('email').focus();
+      return false; 
+    }
+    return true;
+ }
+
+ </script>
+
+</script>
+</body>
+</html>
