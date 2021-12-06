@@ -1,0 +1,189 @@
+import java.util.*;
+import java.io.*;
+import java.util.stream.Collectors;
+
+class Main {
+
+  public static void main(String[] args) throws Exception {
+
+    // CSV files contain the following:
+    // 1. User ID
+    // 2. First and Last Name
+    // 3. Version
+    // 4. Insurance Company
+    // we assume the files are provided as a list to us with complete file path
+    // specified.
+    ArrayList<String> csvFiles = new ArrayList<String>(
+        Arrays.asList("C:\\file1.csv", "C:\\file2.csv", "C:\\file3.csv"));
+
+    // Man structure that contain the list of Users enrolled by Insurance Company
+    // Name
+    HashMap<String, ArrayList<EnrollmentTuple>> enrollmentByInsurance = new HashMap<>();
+    for (String csvFile : csvFiles) {
+      String line = "";
+      String splitBy = ",";
+      try {
+        // parsing a CSV file into BufferedReader class constructor
+        BufferedReader br = new BufferedReader(new FileReader(csvFile));
+        while ((line = br.readLine()) != null) // returns a Boolean value
+        {
+          String[] enrollmentTuple = line.split(splitBy); // use comma as separator
+          String insuranceCompany = enrollmentTuple[3];
+          if (enrollmentByInsurance.containsKey(insuranceCompany)) {
+            ArrayList<EnrollmentTuple> temp = enrollmentByInsurance.get(insuranceCompany);
+            String idToMatch = enrollmentTuple[0];
+            // We have taken performance into consideration so by allowing stream to jsut check first we avoid manually parsing the list
+            // We are just checking if user is present already or not
+            boolean itemExistsBasedOnUserId = temp.stream().map(EnrollmentTuple::getUserID).anyMatch(idToMatch::equals);
+            if (itemExistsBasedOnUserId) {
+              Optional<EnrollmentTuple> optional = temp.stream().filter(e -> idToMatch.equalsIgnoreCase(e.getUserID()))
+                  .findAny();
+              Integer ver = Integer.valueOf(enrollmentTuple[2]);
+              if (ver > optional.get().getVersion()) {
+                // the new user has a higher version , so we need to replace it in the
+                // collection, otherwise no need to update
+                EnrollmentTuple updatedUserEnrollment = new EnrollmentTuple(enrollmentTuple[0], enrollmentTuple[1],
+                    ver);
+                List<EnrollmentTuple> updatedList = temp.stream()
+                    .map(o -> o.getUserID() == updatedUserEnrollment.getUserID() ? updatedUserEnrollment : o)
+                    .collect(Collectors.toList());
+                enrollmentByInsurance.put(insuranceCompany, new ArrayList<EnrollmentTuple>(updatedList));
+              }
+            } else {
+              //The user is not present, so we just store it
+              Integer ver = Integer.valueOf(enrollmentTuple[2]);
+              EnrollmentTuple newUserEnrollment = new EnrollmentTuple(enrollmentTuple[0], enrollmentTuple[1], ver);
+              temp.add(newUserEnrollment);
+              enrollmentByInsurance.put(insuranceCompany, temp);
+            }
+          } else {
+            ArrayList<EnrollmentTuple> temp = new ArrayList<EnrollmentTuple>();
+            Integer ver = Integer.valueOf(enrollmentTuple[2]);
+
+            temp.add(new EnrollmentTuple(enrollmentTuple[0], enrollmentTuple[1], ver));
+            enrollmentByInsurance.put(insuranceCompany, temp);
+          }
+
+        }
+        br.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    // Now all the files have been processed we need to write the files out
+    for (String insuranceCompanyName : enrollmentByInsurance.keySet()) {
+      EnrollmentFile unsortedFile = new EnrollmentFile(insuranceCompanyName,
+          enrollmentByInsurance.get(insuranceCompanyName));
+      unsortedFile.createInsuranceEnrollementFile();
+      // So here the files are written with the sorted information by using the
+      // filename as the insuranceCompany name.
+    }
+
+  }
+
+  static class EnrollmentFile {
+    String insuranceCompany;
+    ArrayList<EnrollmentTuple> memberList;
+
+    public EnrollmentFile(String insuranceCompany, ArrayList<EnrollmentTuple> memberList) {
+      this.insuranceCompany = insuranceCompany;
+      this.memberList = memberList;
+    }
+
+    public void createInsuranceEnrollementFile() {
+
+      // sort the names in ascending order
+      Collections.sort(memberList, new Comparator<EnrollmentTuple>() {
+        @Override
+        public int compare(EnrollmentTuple o1, EnrollmentTuple o2) {
+          int res = o1.getLastName().compareToIgnoreCase(o2.getLastName());
+          if (res != 0)
+            return res;
+          return o1.getFirstName().compareToIgnoreCase(o2.getFirstName());
+        }
+      });
+      // write the file out to the fileSystem
+
+      try (PrintWriter writer = new PrintWriter(this.insuranceCompany + ".csv")) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Id");
+        sb.append(',');
+        sb.append("Name");
+        sb.append(',');
+        sb.append("Version");
+        sb.append('\n');
+        for (EnrollmentTuple member : memberList) {
+          sb.append(member.getUserID());
+          sb.append(',');
+          sb.append(member.getLastName() + " " + member.getFirstName());
+          sb.append(',');
+          sb.append(member.getVersion());
+          sb.append('\n');
+        }
+
+        writer.write(sb.toString());
+
+        System.out.println("done!");
+
+      } catch (FileNotFoundException e) {
+        System.out.println(e.getMessage());
+      }
+
+    }
+
+  }
+
+  public static class EnrollmentTuple {
+    String userID;
+    String fname;
+    String lname;
+    Integer version;
+
+    public EnrollmentTuple(String userID, String name, Integer version) {
+      this.userID = userID;
+      String[] nameArr = name.trim().split("\\s+");
+      this.fname = nameArr[0];
+      this.lname = nameArr[1];
+      this.version = version;
+
+    }
+
+    public String getUserID() {
+      return userID;
+
+    }
+
+    public Integer getVersion() {
+      return version;
+
+    }
+
+    public String getLastName() {
+      return lname;
+
+    }
+
+    public String getFirstName() {
+      return fname;
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
+      EnrollmentTuple model = (EnrollmentTuple) o;
+      return userID.equals(model.userID);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(userID);
+    }
+
+  }
+}
