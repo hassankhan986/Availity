@@ -1,0 +1,32 @@
+class Main {
+  public static void main(String[] args) {
+    String LISPCode = "(* n (factorial (- n 1))";
+    System.out.println("Code output: " + validateParentheses(LISPCode));
+
+  }
+
+  static boolean validateParentheses(String code) {
+
+    int openingCount = 0;
+    int closingCount = 0;
+    //super parentheses case in LISP - not taken care of this Use Case
+    //
+    for (char c : code.toCharArray()) {
+      if (c == '(') {
+        openingCount++;
+      } else if (c == ')') {
+        closingCount++;
+      }
+
+    }
+    // For the  parentheses to be valid , the following case have to be met 
+    // Case 1: As long as there are enough closing or too many, LISP is ok with it
+    // Case 2: ] super parentheses case in LISP, so one ] represents multiple closing parentheses
+    if (closingCount >= openingCount || "]".equals(code.substring(code.length() - 1)) ) {
+      return true;
+    }
+
+    return false;
+
+  }
+}
